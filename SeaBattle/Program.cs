@@ -2,8 +2,18 @@
 Console.WriteLine("\tМорской бой! \n\tВыберите режим игры: \n\t1. Игрок против компьютера. \n\t2. Компьютер против компьютера.");
 int choice = Convert.ToInt32(Console.ReadLine());
 
-void FieldFill()
+switch(choice)
 {
+    case 1:
+        FieldFillStage();
+        break;
+    case 2:
+        break;
+}
+
+void FieldFillStage()
+{
+    bool emptyness = false;
     int Ships1Left = 4;
     int Ships2Left = 3;
     int Ships3Left = 2;
@@ -11,11 +21,18 @@ void FieldFill()
 
     Field playerField = new Field();
     Field PCField = new Field();
+    while (!emptyness)
+    {
+        Console.Clear();
+        ActionSeparator(92, $"\t\t\tМорской бой /Игрок vs Компьютер/ \n\tЗаполните свое поле! У вас есть еще {Ships1Left} одиночных, " +
+            $"{Ships2Left} двойных, {Ships3Left} тройных и {Ships4Left} четверных кораблей");
+        PrintField(playerField);
+        Separator();
+        Console.ReadLine();
 
-    Console.WriteLine($"\tМорской бой /Игрок vs Компьютер/ \n\tЗаполните свое поле! У вас есть еще {Ships1Left} одиночных, " +
-        $"{Ships2Left} двойных, {Ships3Left} тройных и {Ships4Left} четверных кораблей");
-
+    }
     
+
 }
 
 bool FillShip(int xStart, int yStart, int xEnd, int yEnd, Ship ship, Field field)
@@ -108,16 +125,31 @@ bool CheckCellsAround(int xStart, int yStart, int xEnd, int yEnd, Ship ship, Fie
 void PrintField(Field field)
 {
     int rows = field.field.GetUpperBound(0) + 1;    
-    int columns = field.field.Length / rows;        
-                                                
-                                                
+    int columns = field.field.Length / rows;
 
+
+    Console.Write("\n\t\t\t\t");
     for (int i = 0; i < rows; i++)
     {
         for (int j = 0; j < columns; j++)
         {
-            Console.Write($"{field.field[i, j]} ");
+            Console.Write($"{field.field[i, j]}");
         }
-        Console.WriteLine();
+        Console.Write("\n\t\t\t\t");
     }
+}
+
+void ActionSeparator(int num, string action)
+{
+    string sep = "";
+    for (int i = 0; i < num; i++)
+    {
+        sep += "_";
+    }
+    Console.WriteLine($"\t{sep}\n" + $"\n\t{action}\n" + $"\t{sep}\n");
+}
+
+void Separator()
+{
+    Console.WriteLine("\n\t\t\t\t\t    *** *** ***\n");
 }
