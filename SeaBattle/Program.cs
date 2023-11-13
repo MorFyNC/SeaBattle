@@ -1,4 +1,6 @@
 ﻿using SeaBattle.Classes;
+using System.Runtime.InteropServices;
+
 Console.WriteLine("\tМорской бой! \n\tВыберите режим игры: \n\t1. Игрок против компьютера. \n\t2. Компьютер против компьютера.");
 int choice = Convert.ToInt32(Console.ReadLine());
 
@@ -14,20 +16,46 @@ switch(choice)
 void FieldFillStage()
 {
     bool emptyness = false;
-    int Ships1Left = 4;
-    int Ships2Left = 3;
-    int Ships3Left = 2;
-    int Ships4Left = 1;
+    List<Ship> ShipsLeft = new List<Ship> { new ShipOne(), new ShipOne(), new ShipOne(), new ShipOne(), new ShipTwo(), new ShipTwo(), new ShipTwo(), new ShipThree(), new ShipThree(), new ShipFour() };
+    int Ship1Count = 0;
+    int Ship2Count = 0;
+    int Ship3Count = 0;
+    int Ship4Count = 0;
+
+    var shipCount = () =>
+    {
+        foreach(var ship in ShipsLeft)
+        {
+        if (ship is ShipOne)
+            {
+                Ship1Count++;
+            }
+        else if (ship is ShipTwo)
+            {
+                Ship2Count++;
+            }
+        else if (ship is ShipThree)
+            {
+                Ship3Count++;
+            }
+        else if (ship is ShipFour)
+            {
+                Ship4Count++;
+            }
+        }
+    };
 
     Field playerField = new Field();
     Field PCField = new Field();
     while (!emptyness)
     {
         Console.Clear();
-        ActionSeparator(92, $"\t\t\tМорской бой /Игрок vs Компьютер/ \n\tЗаполните свое поле! У вас есть еще {Ships1Left} одиночных, " +
-            $"{Ships2Left} двойных, {Ships3Left} тройных и {Ships4Left} четверных кораблей");
+        shipCount();
+        ActionSeparator(92, $"\t\t\tМорской бой /Игрок vs Компьютер/ \n\tЗаполните свое поле! У вас есть еще {Ship1Count} одиночных, " +
+            $"{Ship1Count} двойных, {Ship2Count} тройных и {Ship4Count} четверных кораблей");
         PrintField(playerField);
         Separator();
+        Console.WriteLine("\t\t\tВыберите длину корабля");
         Console.ReadLine();
 
     }
