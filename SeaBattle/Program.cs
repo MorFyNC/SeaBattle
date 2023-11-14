@@ -1,15 +1,38 @@
 ﻿using SeaBattle.Classes;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
+start:
+ActionSeparator(30, "\t   Морской бой! \n\t\t\t      Выберите режим игры: \n\t\t\t1. PvE \t\t      2. PCvPC");
 
-Console.WriteLine("\tМорской бой! \n\tВыберите режим игры: \n\t1. Игрок против компьютера. \n\t2. Компьютер против компьютера.");
+Console.Write(">");
+bool readedField = false;
 int choice = Convert.ToInt32(Console.ReadLine());
-List<Ship> ShipsLeft = new List<Ship> { new ShipOne(), new ShipOne(), new ShipOne(), new ShipOne(), new ShipTwo(), new ShipTwo(), new ShipTwo(), new ShipThree(), new ShipThree(), new ShipFour() };
+Console.Clear();
+List<Ship> ShipsLeft = new List<Ship> { ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(3), ShipFabric.Create(3), ShipFabric.Create(4) };
+Field playerField = new Field();
+Field PCField = new Field();
 
 switch (choice)
 {
     case 1:
-        FieldFillStage();
+        WannaRead();
+        if (!readedField)
+        {
+            FieldFillStage();
+            WannaSave();
+        }
+        Console.Clear();
+        PrintField(playerField);
+        Console.WriteLine("Вы хотите оставить такое поле? \n\t\t\t\t1.Да \t\t\t\t2.Нет");
+        Console.Write(">");
+        int wannaChange = Convert.ToInt32(Console.ReadLine());
+
+        switch (wannaChange)
+        {
+            case 2: Console.Clear(); goto start;
+            case 1: break;
+        }
         break;
     case 2:
         break;
@@ -51,21 +74,21 @@ void FieldFillStage()
         }
     };
 
-    Field playerField = new Field();
-    Field PCField = new Field();
+    
     while (!(ShipsLeft.Count == 0))
     {
         var PrintTitle = () =>
         {
             Console.Clear();
             shipCount();
-            ActionSeparator(92, $"\t\t\tМорской бой /Игрок vs Компьютер/ \n\tЗаполните свое поле! У вас есть еще {Ship1Count} одиночных, " +
+            ActionSeparator(92, $"\t\t\tМорской бой /Игрок vs Компьютер/ \n\t\t\tЗаполните свое поле! У вас есть еще {Ship1Count} одиночных, " +
                 $"{Ship2Count} двойных, {Ship3Count} тройных и {Ship4Count} четверных кораблей");
             PrintField(playerField);
             Separator();
         };
         PrintTitle();
         Console.WriteLine("\t\t\t\t     Выберите длину корабля");
+        Console.Write(">");
         int len = Convert.ToInt32(Console.ReadLine());
         int startX = 0;
         int startY = 0;
@@ -75,6 +98,7 @@ void FieldFillStage()
         {
             case 1:
                 Console.WriteLine("\t\t\t\t   Введите координату клетки");
+                Console.Write(">");
                 string input = Console.ReadLine();
                 if (input.Count() == 2)
                 {
@@ -92,6 +116,7 @@ void FieldFillStage()
                 break; 
             case 2:
                 Console.WriteLine("\t\t\t\t   Введите координату начальной клетки");
+                Console.Write(">");
                 string start = Console.ReadLine();
                 if (start.Count() == 2)
                 {
@@ -104,6 +129,7 @@ void FieldFillStage()
                     startY = ConvertCoordinate(start[0]) + 1;
                 }
                 Console.WriteLine("\t\t\t\t   Введите координату конечной клетки");
+                Console.Write(">");
                 string end = Console.ReadLine();
                 if (end.Count() == 2)
                 {
@@ -120,6 +146,7 @@ void FieldFillStage()
                 break;
             case 3:
                 Console.WriteLine("\t\t\t\t   Введите координату начальной клетки");
+                Console.Write(">");
                 start = Console.ReadLine();
                 if (start.Count() == 2)
                 {
@@ -132,6 +159,7 @@ void FieldFillStage()
                     startX = Convert.ToInt32(Convert.ToString(start.Substring(1, 2)));
                 }
                 Console.WriteLine("\t\t\t\t   Введите координату конечной клетки");
+                Console.Write(">");
                 end = Console.ReadLine();
                 if (end.Count() == 2)
                 {
@@ -148,6 +176,7 @@ void FieldFillStage()
                 break;
             case 4:
                 Console.WriteLine("\t\t\t\t   Введите координату начальной клетки");
+                Console.Write(">");
                 start = Console.ReadLine();
                 if (start.Count() == 2)
                 {
@@ -160,6 +189,7 @@ void FieldFillStage()
                     startX = Convert.ToInt32(Convert.ToString(start.Substring(1, 2)));
                 }
                 Console.WriteLine("\t\t\t\t   Введите координату конечной клетки");
+                Console.Write(">");
                 end = Console.ReadLine();
                 if (end.Count() == 2)
                 {
@@ -324,7 +354,7 @@ void ActionSeparator(int num, string action)
     {
         sep += "_";
     }
-    Console.WriteLine($"\t{sep}\n" + $"\n\t{action}\n" + $"\t{sep}\n");
+    Console.WriteLine($"\t\t\t{sep}\n" + $"\n\t\t\t{action}\n" + $"\t\t\t{sep}\n");
 }
 
 void Separator()
@@ -348,4 +378,63 @@ int ConvertCoordinate(char coordinate)
         case 'и': return 9;
     }
     return 0;
+}
+
+void WriteFieldToFile(string path, string fileName, Field field)
+{
+    StreamWriter sw = new StreamWriter($"{path}\\{fileName}.txt");
+    sw.WriteLine(JsonConvert.SerializeObject(field.field));
+    sw.Close();
+}
+
+void WannaSave()
+{
+    Console.WriteLine("\t\t\t\tХотите ли вы сохранить данную раскладку? \n \t\t\t\t1.Да \t\t\t\t2.Нет");
+    Console.Write(">");
+    int saveChoice = Convert.ToInt32(Console.ReadLine());
+
+    switch(saveChoice)
+    {
+        case 1:
+            Console.Clear();
+            ActionSeparator(59, "Введите путь к папке, в которую будет сохранена расстановка");
+            Console.Write(">");
+            string path = Console.ReadLine();
+            Console.Clear();
+            ActionSeparator(60, "Введите название файла, в который будет записана расстановка\n\t\t\t\t(будет автоматически создан файл с этим именем)");
+            Console.Write(">");
+            string fileName = Console.ReadLine();
+            WriteFieldToFile(path, fileName, playerField);
+            break;
+        case 2: break;
+    }
+}
+
+void ReadFieldFromFile(string path, string fileName)
+{
+    StreamReader sr = new StreamReader($"{path}\\{fileName}.txt");
+    playerField.field = JsonConvert.DeserializeObject<string[,]>(sr.ReadLine());
+    readedField = true;
+}
+void WannaRead()
+{
+    ActionSeparator(42, "Хотите ли вы загрузить раскладку из файла? \n \t\t\t\t1.Да \t\t2.Нет");
+    Console.Write(">");
+    int readChoice = Convert.ToInt32(Console.ReadLine());
+    Console.Clear();
+    switch (readChoice)
+    {
+        case 1:
+            ActionSeparator(61, "Введите путь к папке, в которуй находится файл с расстановкой");
+            Console.Write(">");
+            string path = Console.ReadLine();
+            Console.Clear();
+            ActionSeparator(54, "Введите название файла, в котором записана расстановка");
+            Console.Write(">");
+            string fileName = Console.ReadLine();
+            Console.Clear();
+            ReadFieldFromFile(path, fileName);
+            break;
+        case 2: break;
+    }
 }
