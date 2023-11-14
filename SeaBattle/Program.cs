@@ -2,6 +2,9 @@
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
+using System.Text;
+Random random = new Random();
+Console.OutputEncoding = Encoding.UTF8;
 start:
 ActionSeparator(30, "\t   Морской бой! \n\t\t\t      Выберите режим игры: \n\t\t\t1. PvE \t\t      2. PCvPC");
 
@@ -33,6 +36,14 @@ switch (choice)
             case 2: Console.Clear(); goto start;
             case 1: break;
         }
+        Console.Clear();
+        deleteSharps(playerField);
+        Console.WriteLine("\t\t\t\tПоле компьютера");
+        PcFieldCreate();
+        deleteSharps(PCField);
+        PrintField(PCField);
+        Console.WriteLine("Поле игрока");
+        PrintField(playerField);
         break;
     case 2:
         break;
@@ -111,7 +122,7 @@ void FieldFillStage()
                     startY = ConvertCoordinate(input[0]) + 1;
                     
                 }
-                if(Ship1Count != 0 && FillShip(startX, startY, startX, startY, 1, playerField))
+                if(Ship1Count != 0 && FillShip(startX, startY, startX, startY, 1, playerField, ShipsLeft))
                     ShipsLeft.RemoveAt(0);
                 break; 
             case 2:
@@ -141,7 +152,7 @@ void FieldFillStage()
                     xEnd = Convert.ToInt32(Convert.ToString(end.Substring(1, 2)));
                     yEnd = ConvertCoordinate(end[0]) + 1;
                 }
-                if (Ship2Count != 0 && FillShip(startX, startY, xEnd, yEnd, 2, playerField))
+                if (Ship2Count != 0 && FillShip(startX, startY, xEnd, yEnd, 2, playerField, ShipsLeft))
                     ShipsLeft.RemoveAt(Ship1Count);
                 break;
             case 3:
@@ -171,7 +182,7 @@ void FieldFillStage()
                     xEnd = Convert.ToInt32(Convert.ToString(end.Substring(1, 2)));
                     yEnd = ConvertCoordinate(end[0]) + 1;
                 }
-                if (Ship3Count != 0 && FillShip(startX, startY, xEnd, yEnd, 3, playerField))
+                if (Ship3Count != 0 && FillShip(startX, startY, xEnd, yEnd, 3, playerField, ShipsLeft))
                     ShipsLeft.RemoveAt(Ship1Count+Ship2Count);
                 break;
             case 4:
@@ -201,7 +212,7 @@ void FieldFillStage()
                     xEnd = Convert.ToInt32(Convert.ToString(end.Substring(1, 2)));
                     yEnd = ConvertCoordinate(end[0]) + 1;
                 }
-                if (Ship4Count != 0 && FillShip(startX, startY, xEnd, yEnd, 4, playerField))
+                if (Ship4Count != 0 && FillShip(startX, startY, xEnd, yEnd, 4, playerField, ShipsLeft))
                     ShipsLeft.RemoveAt(Ship1Count + Ship2Count + Ship3Count);
                 break;
         }
@@ -209,7 +220,7 @@ void FieldFillStage()
     }
 }
 
-bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field field)
+bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field field, List<Ship> ships)
 {
     var FillSharps = (int xStart, int yStart, int xEnd, int yEnd, bool possibility) =>
     {
@@ -251,7 +262,7 @@ bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field fie
         }
     };
 
-    var Fill = (bool possibility, int shiplen, int xStart, int yStart, int xEnd, int yEnd) =>
+    var Fill = (bool possibility, int shiplen, int xStart, int yStart, int xEnd, int yEnd, List<Ship> ships) =>
     {
         int temp1 = xStart;
         int temp2 = yStart;
@@ -261,7 +272,7 @@ bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field fie
             {
                 for (int i = 0; i < shiplen; i++)
                 {
-                    field.field[temp1, temp2] = "[+]";
+                    field.field[temp1, temp2] = "[■]";
                     temp2++;
                 }
             }
@@ -269,7 +280,7 @@ bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field fie
             {
                 for (int i = 0; i < shiplen; i++)
                 {
-                    field.field[temp1, temp2] = "[+]";
+                    field.field[temp1, temp2] = "[■]";
                     temp1++;
                 }
             }
@@ -277,7 +288,7 @@ bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field fie
             {
                 for (int i = 0; i < shiplen; i++)
                 {
-                    field.field[temp1, temp2] = "[+]";
+                    field.field[temp1, temp2] = "[■]";
                     temp1--;
                 }
             }
@@ -285,46 +296,47 @@ bool FillShip(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field fie
             {
                 for (int i = 0; i < shiplen; i++)
                 {
-                    field.field[temp1, temp2] = "[+]";
+                    field.field[temp1, temp2] = "[■]";
                     temp2--;
                 }
             }
             else if(xStart == xEnd && yStart == yEnd)
             {
-                field.field[temp1, temp2] = "[+]";
+                field.field[temp1, temp2] = "[■]";
             }
         }
         FillSharps(xStart, yStart, xEnd, yEnd, possibility);
     };
 
-    bool possibility = CheckCells(xStart, yStart, xEnd, yEnd, shiplen, field);
+    bool possibility = CheckCells(xStart, yStart, xEnd, yEnd, shiplen, field, ships);
+
     switch (shiplen)
     {
         case 1:
-            Fill(possibility, 1, xStart, yStart, xEnd, yEnd);
+            Fill(possibility, 1, xStart, yStart, xEnd, yEnd, ships);
             break;
         case 2:
-            Fill(possibility, 2, xStart, yStart, xEnd, yEnd);
+            Fill(possibility, 2, xStart, yStart, xEnd, yEnd, ships);
             break;
         case 3:
-            Fill(possibility, 3, xStart, yStart, xEnd, yEnd);
+            Fill(possibility, 3, xStart, yStart, xEnd, yEnd, ships);
             break;
         case 4:
-            Fill(possibility, 4, xStart, yStart, xEnd, yEnd);
+            Fill(possibility, 4, xStart, yStart, xEnd, yEnd, ships);
             break;
     }
 
     return possibility;
 }
 
-bool CheckCells(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field field)
+bool CheckCells(int xStart, int yStart, int xEnd, int yEnd, int shiplen, Field field, List<Ship> ships)
 {
     switch(shiplen)
     {
-        case 1: return (field.field[xStart, yStart] == "[ ]" && ShipsLeft.Any(s => s is ShipOne));
-        case 2: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ShipsLeft.Any(s => s is ShipTwo) && Math.Abs(xEnd - xStart) == 1 && yStart == yEnd || Math.Abs(yStart - yEnd) == 1 && xStart == xEnd;
-        case 3: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ShipsLeft.Any(s => s is ShipThree) && Math.Abs(xEnd - xStart) == 2 && yStart == yEnd || Math.Abs(yStart - yEnd) == 2 && xStart == xEnd;
-        case 4: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ShipsLeft.Any(s => s is ShipFour) && Math.Abs(xEnd - xStart) == 3 && yStart == yEnd || Math.Abs(yStart - yEnd) == 3 && xStart == xEnd;
+        case 1: return (field.field[xStart, yStart] == "[ ]" && ships.Any(s => s is ShipOne));
+        case 2: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ships.Any(s => s is ShipTwo) && (Math.Abs(xEnd - xStart) == 1 && yStart == yEnd || Math.Abs(yStart - yEnd) == 1 && xStart == xEnd);
+        case 3: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ships.Any(s => s is ShipThree) && (Math.Abs(xEnd - xStart) == 2 && yStart == yEnd || Math.Abs(yStart - yEnd) == 2 && xStart == xEnd);
+        case 4: return (field.field[xStart, yStart] == "[ ]" && field.field[xEnd, yEnd] == "[ ]") && ships.Any(s => s is ShipFour) && (Math.Abs(xEnd - xStart) == 3 && yStart == yEnd || Math.Abs(yStart - yEnd) == 3 && xStart == xEnd);
     }
     
     return false;
@@ -436,5 +448,150 @@ void WannaRead()
             ReadFieldFromFile(path, fileName);
             break;
         case 2: break;
+    }
+}
+
+void deleteSharps(Field field)
+{
+    int rows = field.field.GetUpperBound(0) + 1;
+    int columns = field.field.Length / rows;
+
+    for (int i = 0; i < rows; i++)
+    {
+        for(int j = 0; j < columns; j++)
+        {
+            if(field.field[i, j] == "[#]")
+            {
+                field.field[i, j] = "[ ]";
+            }
+        }
+    }
+}
+
+void PcFieldCreate()
+{
+    List<Ship> ShipsLeftPC = new List<Ship> { ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(3), ShipFabric.Create(3), ShipFabric.Create(4) };
+
+    int Ship1Count = 0;
+    int Ship2Count = 0;
+    int Ship3Count = 0;
+    int Ship4Count = 0;
+
+    var shipCount = () =>
+    {
+        Ship1Count = 0;
+        Ship2Count = 0;
+        Ship3Count = 0;
+        Ship4Count = 0;
+
+        foreach (Ship ship in ShipsLeftPC)
+        {
+            if (ship is ShipOne)
+            {
+                Ship1Count++;
+            }
+            else if (ship is ShipTwo)
+            {
+                Ship2Count++;
+            }
+            else if (ship is ShipThree)
+            {
+                Ship3Count++;
+            }
+            else if (ship is ShipFour)
+            {
+                Ship4Count++;
+            }
+        }
+    };
+
+    int startX = random.Next(1, 11);
+    int startY = random.Next(1, 11);
+    int xEnd = 0;
+    int yEnd = 0;
+    int rotateChoice = random.Next(1, 3);
+
+    for (int len = 1; len < 5;)
+    {
+        start1:
+        rotateChoice = random.Next(1, 3);
+        startX = random.Next(1, 11);
+        startY = random.Next(1, 11);
+
+        if (rotateChoice == 1 && len == 2)
+        {
+            startX = random.Next(1, 11);
+            startY = random.Next(1, 10);
+            xEnd = startX;
+            yEnd = startY+1;
+        }
+        else if (rotateChoice == 2 && len == 2)
+        {
+            startX = random.Next(1, 10);
+            startY = random.Next(1, 11);
+            xEnd = startX+1;
+            yEnd = startY;
+        }
+
+        if (rotateChoice == 1 && len == 3)
+        {
+            startX = random.Next(1, 11);
+            startY = random.Next(1, 9);
+            xEnd = startX;
+            yEnd = startY + 2;
+        }
+        else if(rotateChoice == 2 && len == 3)
+        {
+            startX = random.Next(1, 9);
+            startY = random.Next(1, 11);
+            xEnd = startX + 2;
+            yEnd = startY;
+        }
+
+        if (rotateChoice == 1 && len == 4)
+        {
+            startX = random.Next(1, 11);
+            startY = random.Next(1, 8);
+            xEnd = startX;
+            yEnd = startY + 3;
+        }
+        else if (rotateChoice == 2 && len == 4)
+        {
+            startX = random.Next(1, 8);
+            startY = random.Next(1, 11);
+            xEnd = startX + 3;
+            yEnd = startY;
+        }
+        shipCount();
+        switch (len)
+        {
+            case 1:
+                if (Ship1Count != 0 && FillShip(startX, startY, startX, startY, 1, PCField, ShipsLeftPC))
+                {
+                    ShipsLeftPC.RemoveAt(0);
+                }
+                    break;
+            case 2:
+                if (Ship2Count != 0 && FillShip(startX, startY, xEnd, yEnd, 2, PCField, ShipsLeftPC))
+                {   
+                    ShipsLeftPC.RemoveAt(0);
+                }
+                break;
+            case 3:
+                if (Ship3Count != 0 && FillShip(startX, startY, xEnd, yEnd, 3, PCField, ShipsLeftPC))
+                {   
+                    ShipsLeftPC.RemoveAt(0);
+                }
+                break;
+            case 4:
+                if (Ship4Count != 0 && FillShip(startX, startY, xEnd, yEnd, 4, PCField, ShipsLeftPC))
+                {   
+                    ShipsLeftPC.RemoveAt(0);
+                }
+                break;
+        }
+        if ((Ship1Count == 0 && len == 1) || (Ship2Count == 0 && len == 2) || (Ship3Count == 0 && len == 3) || (Ship4Count == 0 && len == 4)) len++;
+        else { goto start1; }
+       
     }
 }
