@@ -5,6 +5,11 @@ using Newtonsoft.Json;
 using System.Text;
 Random random = new Random();
 Console.OutputEncoding = Encoding.UTF8;
+string gameType;
+int opponent = 0;
+string prevTurn;
+string playerShot = "";
+string computerShot = "";
 start:
 ActionSeparator(30, "\t   Морской бой! \n\t\t\t      Выберите режим игры: \n\t\t\t1. PvE \t\t      2. PCvPC");
 
@@ -13,12 +18,15 @@ bool readedField = false;
 int choice = Convert.ToInt32(Console.ReadLine());
 Console.Clear();
 List<Ship> ShipsLeft = new List<Ship> { ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(1), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(2), ShipFabric.Create(3), ShipFabric.Create(3), ShipFabric.Create(4) };
-Field playerField = new Field();
-Field PCField = new Field();
+Field playerField = new Field("Игрок");
+Field PCField = new Field("Компьютер");
+Field EmptyField1 = new Field();
+Field EmptyField2 = new Field();
 
 switch (choice)
 {
     case 1:
+        gameType = "PvE";
         WannaRead();
         if (!readedField)
         {
@@ -38,14 +46,14 @@ switch (choice)
         }
         Console.Clear();
         deleteSharps(playerField);
-        Console.WriteLine("\t\t\t\tПоле компьютера");
         PcFieldCreate();
         deleteSharps(PCField);
-        PrintField(PCField);
         Console.WriteLine("Поле игрока");
         PrintField(playerField);
+        PvE();
         break;
     case 2:
+        gameType = "PCvPC";
         break;
 }
 
@@ -378,16 +386,16 @@ int ConvertCoordinate(char coordinate)
 {
     switch(coordinate)
     {
-        case 'а': return 0;
-        case 'б': return 1;
-        case 'в': return 2;
-        case 'г': return 3;
-        case 'д': return 4;
-        case 'е': return 5;
-        case 'ё': return 6;
-        case 'ж': return 7;
-        case 'з': return 8;
-        case 'и': return 9;
+        case 'а': return 1;
+        case 'б': return 2;
+        case 'в': return 3;
+        case 'г': return 4;
+        case 'д': return 5;
+        case 'е': return 6;
+        case 'ё': return 7;
+        case 'ж': return 8;
+        case 'з': return 9;
+        case 'и': return 10;
     }
     return 0;
 }
@@ -594,4 +602,87 @@ void PcFieldCreate()
         else { goto start1; }
        
     }
+}
+
+void PvE()
+{
+    bool win = false;
+    while(!win)
+    {
+        Console.Clear();
+        Console.WriteLine("\t\t\t\tВаше поле");
+        PrintField(playerField);
+        Console.WriteLine("Вражеское поле");
+        PrintField(EmptyField2);
+        Turn(playerField, PCField);
+    }
+}
+
+string[] Turn(Field field1, Field field2)
+{
+    
+    if (gameType == "PvE")
+    {
+        switch (opponent)
+        {
+            case 0:
+            again:
+                string output = $"{computerShot} \n {playerShot}\n\t\t\t\tВведите координату клетки, в которую хотите выстрелить";
+                Console.WriteLine(output);
+                Console.Write(">");
+                string shootCoordinate = Console.ReadLine();
+                int x = shootCoordinate.Length == 2 ? Convert.ToInt32(Convert.ToString(shootCoordinate[1])) : Convert.ToInt32(shootCoordinate.Substring(1, 2));
+                int y = ConvertCoordinate(shootCoordinate[0]);
+
+                if (!Shoot(field2, x, y))
+                {
+                    playerShot = $"\t\t\t\t{field1.owner} попал";
+                    goto again;
+                }
+                else
+                {
+                    playerShot = $"\t\t\t\t{field1.owner} не попал";
+                    opponent = 1;
+                }
+                break;
+            case 1:
+            PC:
+                x = random.Next(1, 11);
+                y = random.Next(1, 11);
+
+                if (!Shoot(field1, x, y))
+                {
+                    computerShot = $"{field2.owner} попал";
+                    goto PC;
+                }
+                else
+                {
+                    computerShot = $"{field2.owner} не попал";
+                    opponent = 0;
+                }
+                break;
+        }    
+        return new string[] { playerShot, computerShot };
+    }
+    return null;
+}
+
+bool Shoot(Field field, int x, int y)
+{
+    if (field.field[x, y] == "[ ]")
+    {
+        if (opponent == 1) EmptyField1.field[x, y] = "[○]";
+        else EmptyField2.field[x, y] = "[○]";
+        field.field[x, y] = "[○]";
+        return true;
+    }
+    else if (field.field[x,y]== "[■]")
+    {
+        if (opponent == 1) EmptyField1.field[x, y] = "[X]";
+        else EmptyField2.field[x, y] = "[X]";
+        field.field[x, y] = "[X]";
+        return true;
+    }
+
+    return false;
 }

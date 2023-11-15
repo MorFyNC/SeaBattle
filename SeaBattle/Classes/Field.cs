@@ -8,6 +8,8 @@ namespace SeaBattle.Classes
 {
     public class Field
     {
+        public string owner;
+
         public string[,] field = 
         {
             { "   ", " а ", " б ", " в ", " г ", " д ", " е ", " ё ", " ж ", " з ", " и ", ""},
@@ -24,8 +26,12 @@ namespace SeaBattle.Classes
             { "","","","","","","","","","", "", ""}
         };
 
-        public Field() { }
+        public Field(string owner)
+        {
+            this.owner = owner;
+        }
 
+        public Field() { }
         public override string ToString()
         {
             return $"{field}";
