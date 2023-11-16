@@ -10,6 +10,7 @@ int opponent = 0;
 string prevTurn;
 string playerShot = "";
 string computerShot = "";
+string winner = "";
 start:
 ActionSeparator(30, "\t   Морской бой! \n\t\t\t      Выберите режим игры: \n\t\t\t1. PvE \t\t      2. PCvPC");
 
@@ -606,16 +607,16 @@ void PcFieldCreate()
 
 void PvE()
 {
-    bool win = false;
-    while(!win)
+    while(!winCheck(playerField, PCField))
     {
-        Console.Clear();
-        Console.WriteLine("\t\t\t\tВаше поле");
-        PrintField(playerField);
-        Console.WriteLine("Вражеское поле");
-        PrintField(EmptyField2);
         Turn(playerField, PCField);
     }
+    Console.Clear();
+    Console.WriteLine($"\t\t\t\tПобедил {winner}");
+    Console.WriteLine("\t\t\t\tВаше поле");
+    PrintField(playerField);
+    Console.WriteLine("Вражеское поле");
+    PrintField(PCField);
 }
 
 string[] Turn(Field field1, Field field2)
@@ -627,6 +628,11 @@ string[] Turn(Field field1, Field field2)
         {
             case 0:
             again:
+                Console.Clear();
+                Console.WriteLine("\t\t\t\tВаше поле");
+                PrintField(playerField);
+                Console.WriteLine("Вражеское поле");
+                PrintField(EmptyField2);
                 string output = $"{computerShot} \n {playerShot}\n\t\t\t\tВведите координату клетки, в которую хотите выстрелить";
                 Console.WriteLine(output);
                 Console.Write(">");
@@ -636,12 +642,12 @@ string[] Turn(Field field1, Field field2)
 
                 if (!Shoot(field2, x, y))
                 {
-                    playerShot = $"\t\t\t\t{field1.owner} попал";
+                    playerShot = "\t\t\t\tВы попали";
                     goto again;
                 }
                 else
                 {
-                    playerShot = $"\t\t\t\t{field1.owner} не попал";
+                    playerShot = "\t\t\t\tВы не попали";
                     opponent = 1;
                 }
                 break;
@@ -650,10 +656,18 @@ string[] Turn(Field field1, Field field2)
                 x = random.Next(1, 11);
                 y = random.Next(1, 11);
 
-                if (!Shoot(field1, x, y))
+                if(!Shoot(field1, x, y))
                 {
                     computerShot = $"{field2.owner} попал";
-                    goto PC;
+                    Console.Clear();
+                    Console.WriteLine("\t\t\t\tВНИМАНИЕ");
+                    PrintField(playerField);
+                    Console.WriteLine($"{computerShot}");
+                    Console.WriteLine("Нажмите ENTER чтобы продолжить");
+                    Console.ReadLine();
+                    if (!winCheck(playerField, PCField))
+                        goto PC;
+                    break;
                 }
                 else
                 {
@@ -681,8 +695,43 @@ bool Shoot(Field field, int x, int y)
         if (opponent == 1) EmptyField1.field[x, y] = "[X]";
         else EmptyField2.field[x, y] = "[X]";
         field.field[x, y] = "[X]";
-        return true;
+        return false;
     }
 
     return false;
+}
+
+bool winCheck(Field field1, Field field2)
+{
+    for(int i = 0; i < 12; i++)
+    {
+        for(int j = 0; j < 12; j++)
+        {
+            if (checkShips(field1.field) && checkShips(field2.field)) { return false; }
+        }
+    }
+    if (!checkShips(field1.field))
+        winner = field2.owner;
+    else if (!checkShips(field2.field))
+        winner = field1.owner;
+
+    return true;
+}
+
+bool checkShips(string[,] arr)
+{
+    bool flag = false;
+    for (int r = 0; r < 12; r++)
+    {
+        int c = 0;
+        while (flag == false && c < 12)
+        {
+            if (arr[r, c] == "[■]")
+            {
+                flag = true;
+            }
+            c++;
+        }
+    }
+    return flag;
 }
