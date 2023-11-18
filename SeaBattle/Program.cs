@@ -11,6 +11,10 @@ string prevTurn;
 string playerShot = "";
 string computerShot = "";
 string winner = "";
+List<int> xcoords = new List<int>{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+List<int> ycoords = xcoords;
+List<int> defaults = xcoords;
+bool hitted = false;
 start:
 ActionSeparator(30, "\t   Морской бой! \n\t\t\t      Выберите режим игры: \n\t\t\t1. PvE \t\t      2. PCvPC");
 
@@ -653,11 +657,24 @@ string[] Turn(Field field1, Field field2)
                 break;
             case 1:
             PC:
-                x = random.Next(1, 11);
-                y = random.Next(1, 11);
+                x = xcoords[random.Next(xcoords.Count)];
+                y = ycoords[random.Next(ycoords.Count)];
 
-                if(!Shoot(field1, x, y))
+                if (Shoot(field1, x, y) && hitted)
                 {
+
+                    switch (random.Next(2))
+                    {
+                        case 0:
+                            xcoords = new List<int> { x, (x < 11 ? x + 1 : x - 1), (x > 1 ? x - 1 : x + 1) };
+                            ycoords = new List<int> { y };
+                            break;
+                        case 1:
+                            xcoords = new List<int> { x };
+                            ycoords = new List<int> { y, (y < 11 ? y + 1 : y - 1), (y > 1 ? y - 1 : y + 1) };
+                            break;
+                    }
+
                     computerShot = $"{field2.owner} попал";
                     Console.Clear();
                     Console.WriteLine("\t\t\t\tВНИМАНИЕ");
@@ -665,15 +682,18 @@ string[] Turn(Field field1, Field field2)
                     Console.WriteLine($"{computerShot}");
                     Console.WriteLine("Нажмите ENTER чтобы продолжить");
                     Console.ReadLine();
-                    if (!winCheck(playerField, PCField))
+                    if (!winCheck(playerField, PCField) && hitted)
                         goto PC;
                     break;
                 }
-                else
+                else if (Shoot(field1, x, y) && !hitted)
                 {
                     computerShot = $"{field2.owner} не попал";
                     opponent = 0;
                 }
+                else if (checkPossibility(field1, xcoords, ycoords))
+                    goto PC;
+                else { xcoords = defaults; ycoords = defaults; }
                 break;
         }    
         return new string[] { playerShot, computerShot };
@@ -688,6 +708,7 @@ bool Shoot(Field field, int x, int y)
         if (opponent == 1) EmptyField1.field[x, y] = "[○]";
         else EmptyField2.field[x, y] = "[○]";
         field.field[x, y] = "[○]";
+        hitted = false;
         return true;
     }
     else if (field.field[x,y]== "[■]")
@@ -695,7 +716,8 @@ bool Shoot(Field field, int x, int y)
         if (opponent == 1) EmptyField1.field[x, y] = "[X]";
         else EmptyField2.field[x, y] = "[X]";
         field.field[x, y] = "[X]";
-        return false;
+        hitted = true;
+        return true;
     }
 
     return false;
@@ -734,4 +756,17 @@ bool checkShips(string[,] arr)
         }
     }
     return flag;
+}
+
+bool checkPossibility(Field field, List<int> xcoords, List<int> ycoords)
+{
+    bool pos = false;
+    foreach (int x in xcoords)
+    {
+        foreach(int y in ycoords)
+        {
+            if (field.field[x, y] == "[ ]" || field.field[x, y] == "[■]") return pos = true;
+        }
+    }
+    return pos;
 }
