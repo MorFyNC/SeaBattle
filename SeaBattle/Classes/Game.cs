@@ -13,6 +13,19 @@ namespace SeaBattle.Classes
         bool prevHit1 = false;
         bool prevHit2 = false;
         int turn = 1;
+
+        public void GameStart()
+        {
+        again:
+            Console.Clear();
+            Console.Write("\t\t\t\t|Морской бой| \n\t\t\t    Выберите режим игры:\n\t\t1.PvE \t\t\t\t2.PCvPC\n>");
+            switch(Console.ReadLine())
+            {
+                case "1": PvE(); break;
+                case "2": PCvPC(); break;
+                default: goto again;
+            }
+        }
         public void FieldFillStage()
         {
             if (field1.WannaRead())
@@ -147,7 +160,7 @@ namespace SeaBattle.Classes
             winGame();
         }
 
-        public void PCvsPC()
+        public void PCvPC()
         {
             field1.RandomFill();
             field2.RandomFill();
