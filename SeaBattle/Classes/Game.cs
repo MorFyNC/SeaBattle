@@ -70,6 +70,8 @@
             int[] firstShoot = { 0, 0 };
             while (!winCheck())
             {
+                int[] temp = { };
+                int[] shoot = { };
                 Console.Clear();
                 Console.WriteLine("\t\t\t\t\tВаше поле");
                 field1.PrintField(true);
@@ -85,7 +87,8 @@
                 {
                     if (ShootCoordinates.Count == 0)
                         ShootCoordinates = Special.CoordinateList();
-                    int[] shoot = Turn(field1, ShootCoordinates[random.Next(ShootCoordinates.Count)]);
+                    if (prevHit) temp = shoot;
+                    shoot = Turn(field1, ShootCoordinates[random.Next(ShootCoordinates.Count)]);
                     if (field1.field[shoot[0], shoot[1]] == "[#]")
                         ShootCoordinates = Special.CoordinateList();
                    
@@ -99,15 +102,18 @@
                         }
                         else
                         {
-                            ShootCoordinates = Special.NewCoordinateListWithFirstShoot(ShootCoordinates, firstShoot, shoot);
+                            if (firstShoot.Length != 0)
+                                ShootCoordinates = Special.NewCoordinateListWithFirstShoot(ShootCoordinates, firstShoot, shoot);
+                            else
+                                ShootCoordinates = Special.CoordinateList();
                             if (field1.field[shoot[0], shoot[1]] == "[X]" && !field1.checkShootPossibility(ShootCoordinates[0][0], ShootCoordinates[0][1]))
                             {
                                 firstShoot = shoot;
                                 ShootCoordinates = Special.NewCoordinateList(shoot);
                             }
-                            else if (!field1.checkShootPossibility(ShootCoordinates[0][0], ShootCoordinates[0][1]) && !field1.checkShootPossibility(ShootCoordinates[1][0], ShootCoordinates[1][1]))
+                            else if (!field1.checkShootPossibility(ShootCoordinates[0][0], ShootCoordinates[0][1]) && ShootCoordinates.Count < 4)
                             {
-                                firstShoot = ShootCoordinates[1];
+                                firstShoot = temp;
                             }
                         }
                     }
