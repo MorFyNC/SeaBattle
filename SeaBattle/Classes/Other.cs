@@ -129,11 +129,13 @@ namespace SeaBattle.Classes
 
         public static List<int[]> NewCoordinateList(int[] coordinates)
         {
-            int x = coordinates[0];
-            int y = coordinates[1];
+            if (coordinates.Length != 0)
+            {
+                int x = coordinates[0];
+                int y = coordinates[1];
 
 
-            List<int[]> NewList = new List<int[]>
+                List<int[]> NewList = new List<int[]>
             {
                 x < 10 ? new int[] { x + 1, y } : null,
                 x > 1 ? new int[] { x - 1, y } : null,
@@ -141,8 +143,10 @@ namespace SeaBattle.Classes
                 y > 1 ? new int[] { x, y - 1 } : null,
             };
 
-            NewList.Remove(null);
-            return NewList;
+                NewList.Remove(null);
+                return NewList;
+            }
+            return new List<int[]>();
         }
 
         public static int FindIndex(List<int[]> list, int[] arr)

@@ -1,4 +1,6 @@
-﻿namespace SeaBattle.Classes
+﻿using System.Runtime.InteropServices.JavaScript;
+
+namespace SeaBattle.Classes
 {
     public class Game
     {
@@ -47,16 +49,20 @@
         }
         public int[] Turn(Field field, int[] coords)
         {
-            int x = coords[0];
-            int y = coords[1];
-            if (field.checkShootPossibility(x, y))
+            if (coords != null)
             {
-                prevHit = field.Shoot(x, y);
-                if (!prevHit) turn++;
-            }
+                int x = coords[0];
+                int y = coords[1];
+                if (field.checkShootPossibility(x, y))
+                {
+                    prevHit = field.Shoot(x, y);
+                    if (!prevHit) turn++;
+                }
 
-            if (field.checkShootPossibility(x, y) && field.Shoot(x, y)) prevHit = true;
-            return new int[] { x, y };
+                if (field.checkShootPossibility(x, y) && field.Shoot(x, y)) prevHit = true;
+                return new int[] { x, y };
+            }
+            return new int[] { 0 };
         }
 
         public void PvE()
@@ -76,7 +82,7 @@
                 Console.WriteLine("\t\t\t\t\tВаше поле");
                 field1.PrintField(true);
                 Console.WriteLine("\tПоле Врага");
-                field2.PrintField(true);
+                field2.PrintField(false);
                 if (turn % 2 == 1)
                 {
                     Console.Write("Введите координату клетки, в которую хотите выстрелить\n\n>>");
@@ -91,8 +97,8 @@
                     shoot = Turn(field1, ShootCoordinates[random.Next(ShootCoordinates.Count)]);
                     if (field1.field[shoot[0], shoot[1]] == "[#]")
                         ShootCoordinates = Special.CoordinateList();
-                   
-                    
+
+
                     if (prevHit)
                     {
                         if (ShootCoordinates.Count == 100)
@@ -117,8 +123,8 @@
                             }
                         }
                     }
-                        
-                    else if (!prevHit && ShootCoordinates.Count == 0)
+
+                    else if (!prevHit && ShootCoordinates.Count == 0 || ShootCoordinates.Count == 0)
                         ShootCoordinates = Special.CoordinateList();
                     else if (!prevHit && ShootCoordinates.Count != 100)
                         ShootCoordinates.RemoveAt(Special.FindIndex(ShootCoordinates, shoot));
@@ -133,6 +139,79 @@
         {
             field1.RandomFill();
             field2.RandomFill();
+            field1.owner = "PC1";
+            field2.owner = "PC2";
+            Console.WriteLine($"\t\t\t\tПоле {field1.owner}");
+            field1.PrintField(true);
+            Console.WriteLine($"\t\t\t\tПоле {field2.owner}");
+            field2.PrintField(true);
+            List<int[]> ShootCoordinates = Special.CoordinateList();
+            List<int[]> defaults = Special.CoordinateList();
+            int[] firstShoot = { 0, 0 };
+
+            while (!winCheck())
+            {
+                System.Threading.Thread.Sleep(10);
+                Console.Clear();
+                Console.WriteLine($"\t\t\t\tПоле {field1.owner}");
+                field1.PrintField(true);
+                Console.WriteLine($"Поле {field2.owner}");
+                field2.PrintField(true);
+
+                int[] temp = { };
+                int[] shoot = { };
+
+                if (turn % 2 == 1)
+                {
+                    turn++;
+                }
+                else
+                {
+                tryagain:
+                    
+                    
+                    if (ShootCoordinates.Count == 0)
+                        ShootCoordinates = Special.CoordinateList();
+                    int[] rngCoords = ShootCoordinates[random.Next(ShootCoordinates.Count)];
+                    if (prevHit) temp = shoot;
+
+                    shoot = Turn(field2, rngCoords);
+                    if (Turn(field2, rngCoords)[0] == 0) { goto tryagain; }
+                    if (field2.field[shoot[0], shoot[1]] == "[#]")
+                        ShootCoordinates = Special.CoordinateList();
+
+                    if (prevHit)
+                    {
+                        if (ShootCoordinates.Count == 100)
+                        {
+                            firstShoot = shoot;
+                            ShootCoordinates = Special.NewCoordinateList(shoot);
+                        }
+                        else
+                        {
+                            if (firstShoot.Length != 0)
+                                ShootCoordinates = Special.NewCoordinateListWithFirstShoot(ShootCoordinates, firstShoot, shoot);
+                            else
+                                ShootCoordinates = Special.CoordinateList();
+                            if (field2.field[shoot[0], shoot[1]] == "[X]" && !field2.checkShootPossibility(ShootCoordinates[0][0], ShootCoordinates[0][1]))
+                            {
+                                firstShoot = shoot;
+                                ShootCoordinates = Special.NewCoordinateList(shoot);
+                            }
+                            else if (!field2.checkShootPossibility(ShootCoordinates[0][0], ShootCoordinates[0][1]) && ShootCoordinates.Count < 4)
+                            {
+                                firstShoot = temp;
+                            }
+                        }
+                    }
+                    
+                    else if (!prevHit && ShootCoordinates.Count == 0)
+                        ShootCoordinates = Special.CoordinateList();
+                    else if (!prevHit && ShootCoordinates.Count != 100)
+                        ShootCoordinates.RemoveAt(Special.FindIndex(ShootCoordinates, shoot));
+                }
+            }
+            winGame();
         }
 
         public void winGame()
