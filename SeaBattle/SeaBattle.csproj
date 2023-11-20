@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Folder Include="FieldSamples\" />
+    <Folder Include="типо мем\" />
   </ItemGroup>
 
   <ItemGroup>
