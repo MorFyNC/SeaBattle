@@ -113,7 +113,7 @@ namespace SeaBattle.Classes
             };
         }
 
-        public static List<int[]> CoordinateList() 
+        public static List<int[]> CoordinateList(Field field) 
         {
             List<int[]> list = new List<int[]>();
 
@@ -121,6 +121,7 @@ namespace SeaBattle.Classes
             {
                 for(int j = 1; j < 11; j++)
                 {
+                    if (field.field[i, j] == "[ ]" || field.field[i, j] == "[■]")
                     list.Add(new int[] { i, j });
                 }
             }
